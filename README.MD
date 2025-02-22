@@ -1,4 +1,4 @@
-# TimeEdit API Fetcher
+# UM TimeEdit Data Extractor
 
 This is a JavaScript tool designed to fetch course events and related details from the TimeEdit API. It's optimized for speed by fetching reservation details in parallel and outputs the data as a JSON file.
 
