@@ -6,9 +6,9 @@ This is a JavaScript tool designed to fetch course events and related details fr
 
 This script interacts with the TimeEdit API to:
 
-1.  **Fetch a list of all objects** (e.g., courses, rooms, lecturers).
-2.  **Retrieve detailed information** for each object.
-3.  **Get course events** (reservations) associated with each object.
+1.  **Fetch a list of all modules** (e.g., courses, rooms, lecturers).
+2.  **Retrieve detailed information** for each modules.
+3.  **Get modules events** (reservations) associated with each modules.
 4.  **Download the data as a `course_events_with_details.json` file** in your browser.
 
 ## Getting Started
