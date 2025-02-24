@@ -69,6 +69,63 @@ To facilitate efficient application development, the raw data from Phase 1 requi
     ```
 
     This command will process the raw data and generate `timetable_data.json` in the same directory, providing you with the structured data ready for integration into your UM timetable application.
+    
+    Example of JSON data:
+    
+  
+    ```json
+    {
+      "level": "BACHELOR",
+      "credit": 3,
+      "faculty": "FACULTY OF COMPUTER SCIENCE AND INFORMATION TECHNOLOGY",
+      "levelCode": 3,
+      "activities": {
+        "LAB": [],
+        "LEC": [
+          {
+            "room": "DK2",
+            "endTime": "15:00",
+            "dayOfWeek": "Wednesday",
+            "startTime": "13:00",
+            "occurrences": [
+              "1",
+              "2"
+            ]
+          }
+        ],
+        "ONL": [],
+        "PRA": [],
+        "SEM": [],
+        "TUT": [
+          {
+            "room": "MM3",
+            "endTime": "16:00",
+            "dayOfWeek": "Friday",
+            "startTime": "15:00",
+            "occurrences": [
+              "1"
+            ]
+          },
+          {
+            "room": "MM3",
+            "endTime": "17:00",
+            "dayOfWeek": "Friday",
+            "startTime": "16:00",
+            "occurrences": [
+              "2"
+            ]
+          }
+        ],
+        "REPROJECT": []
+      },
+      "moduleCode": "WID3013",
+      "moduleName": "COMPUTER VISION AND PATTERN RECOGNITION",
+      "yearPeriod": "2024/S1, 2024/S2",
+      "examDuration": 7200,
+      "overallTargetStudent": 120,
+      "continuousAssessmentWeightage": "50~50"
+    }
+    ```
 
 ## Contributing to the UM Timetable Ecosystem
 
