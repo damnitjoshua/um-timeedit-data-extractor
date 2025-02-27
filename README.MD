@@ -51,58 +51,58 @@ This toolkit is designed to be used in two distinct phases: data acquisition usi
 
 6.  **Download Raw JSON Data:** Upon successful script completion, the browser will automatically download a file named `course_events_with_details.json` to your browser's default download directory. This file contains the raw, extracted data in JSON format, ready for the next phase.
 
-Example of JSON data:
-    
-  
+
+    Example JSON
     ```json
-    {
-      "moduleName": "TRENDS IN INFORMATION SYSTEMS",
-      "moduleCode": "WIE2001",
-      "credit": 3,
-      "yearPeriod": "2024/S2",
-      "overallTargetStudent": 60,
-      "level": "BACHELOR",
-      "faculty": "FACULTY OF COMPUTER SCIENCE AND INFORMATION TECHNOLOGY",
-      "continuousAssessmentWeightage": "50~50",
-      "examDuration": 7200,
-      "levelCode": 3,
-      "activities": {
-        "LEC": [
-          {
-            "dayOfWeek": "Monday",
-            "startTime": "08:00",
-            "endTime": "11:00",
-            "room": "MM4",
-            "occurrences": [
-              "1",
-              "1M"
-            ]
-          }
-        ],
-        "EXAM": [
-          {
-            "dayOfWeek": "Monday",
-            "startTime": "08:30",
-            "endTime": "10:30",
-            "room": "EXAM_HOLD_G",
-            "startDate": "07/07/2025",
-            "endDate": "07/07/2025",
-            "activityTypeExam": "Physical",
-            "occurrences": [
-              "1",
-              "1M"
-            ]
-          }
-        ],
-        "TUT": [],
-        "LAB": [],
-        "ONL": [],
-        "REPROJECT": [],
-        "SEM": [],
-        "PRA": []
+      {
+        "moduleName": "TRENDS IN INFORMATION SYSTEMS",
+        "moduleCode": "WIE2001",
+        "credit": 3,
+        "yearPeriod": "2024/S2",
+        "overallTargetStudent": 60,
+        "level": "BACHELOR",
+        "faculty": "FACULTY OF COMPUTER SCIENCE AND INFORMATION TECHNOLOGY",
+        "continuousAssessmentWeightage": "50~50",
+        "examDuration": 7200,
+        "levelCode": 3,
+        "activities": {
+          "LEC": [
+            {
+              "dayOfWeek": "Monday",
+              "startTime": "08:00",
+              "endTime": "11:00",
+              "room": "MM4",
+              "occurrences": [
+                "1",
+                "1M"
+              ]
+            }
+          ],
+          "EXAM": [
+            {
+              "dayOfWeek": "Monday",
+              "startTime": "08:30",
+              "endTime": "10:30",
+              "room": "EXAM_HOLD_G",
+              "startDate": "07/07/2025",
+              "endDate": "07/07/2025",
+              "activityTypeExam": "Physical",
+              "occurrences": [
+                "1",
+                "1M"
+              ]
+            }
+          ],
+          "TUT": [],
+          "LAB": [],
+          "ONL": [],
+          "REPROJECT": [],
+          "SEM": [],
+          "PRA": []
+        }
       }
-    }
-    ```
+      ```
+
 
 ### Phase 2: Data Structuring with `cleaner.js` (Node.js Environment)
 
