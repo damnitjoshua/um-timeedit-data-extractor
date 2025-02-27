@@ -28,10 +28,15 @@ function cleanTimetableData(jsonData, activitiesToInclude) {
       module.events.forEach(event => {
         if (event.html_details && event.columns && Array.isArray(event.columns)) {
           const startDate = event.startdate ?? null;
+          const endDate = event.enddate ?? null;
           const dayOfWeek = startDate ? getDayOfWeek(startDate) : null;
           const startTime = event.starttime ?? null;
           const endTime = event.endtime ?? null;
-          const activityType = event.html_details.Activity;
+          let activityType = event.html_details.Activity;
+          if (event.html_details["Activity Type (exam)"] !== undefined && event.html_details["Exam Time Slot"] !== undefined) {
+            activityType = "EXAM";
+          }
+
           let room = event.html_details.Room ?? null;
           const occurrences = [];
 
@@ -59,6 +64,17 @@ function cleanTimetableData(jsonData, activitiesToInclude) {
 
           if (activitiesToInclude.includes(activityType) && dayOfWeek && startTime && endTime && room) {
             const eventDetails = { dayOfWeek, startTime, endTime, room };
+            if (activityType === "EXAM") {
+              eventDetails.startDate = startDate;
+              eventDetails.endDate = endDate;
+              let activityTypeExamValue = event.html_details["Activity Type (exam)"] || null;
+              if (activityTypeExamValue === "Fizikal") {
+                activityTypeExamValue = "Physical";
+              } else if (activityTypeExamValue === "Atas Talian") {
+                activityTypeExamValue = "Online";
+              }
+              eventDetails["activityTypeExam"] = activityTypeExamValue; // Include renamed "Activity Type (exam)"
+            }
             if (occurrences.length > 0) {
               eventDetails.occurrences = occurrences;
             }
@@ -116,7 +132,6 @@ if (!filePath) {
   process.exit(1);
 }
 
-
 fs.readFile(filePath, 'utf8', (err, data) => {
   if (err) {
     console.error("Error reading the file:", err);
@@ -127,17 +142,25 @@ fs.readFile(filePath, 'utf8', (err, data) => {
     const jsonData = JSON.parse(data);
 
     const uniqueActivitiesSet = new Set();
+    const uniqueExamActivityTypes = new Set();
+
     jsonData.forEach(module => {
       if (module.events && Array.isArray(module.events)) {
         module.events.forEach(event => {
           if (event.html_details && event.html_details.Activity) {
             uniqueActivitiesSet.add(event.html_details.Activity);
           }
+
+          if (event.html_details["Activity Type (exam)"] && event.html_details["Exam Time Slot"]) {
+            uniqueActivitiesSet.add("EXAM");
+            uniqueExamActivityTypes.add(event.html_details["Activity Type (exam)"]);
+          }
         });
       }
     });
     const activitiesToProcess = Array.from(uniqueActivitiesSet);
     console.log("Dynamically detected activities:", activitiesToProcess);
+    console.log("Unique Exam types (before rename):", Array.from(uniqueExamActivityTypes));
 
     const cleanedData = cleanTimetableData(jsonData, activitiesToProcess);
 
@@ -147,7 +170,7 @@ fs.readFile(filePath, 'utf8', (err, data) => {
       if (writeErr) {
         console.error("Error writing to the output file:", writeErr);
       } else {
-        console.log(`Successfully cleaned and saved module-structured data with ordered occurrences in activities to ${outputFilePath}`);
+        console.log(`Successfully cleaned and saved module-structured data with renamed 'Activity Type (exam)' in activities to ${outputFilePath}`);
       }
     });
 
