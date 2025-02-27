@@ -75,56 +75,70 @@ To facilitate efficient application development, the raw data from Phase 1 requi
   
     ```json
     {
-        "moduleName": "COMPUTER VISION AND PATTERN RECOGNITION",
-        "moduleCode": "WID3013",
-        "credit": 3,
-        "yearPeriod": "2024/S1, 2024/S2",
-        "overallTargetStudent": 120,
-        "level": "BACHELOR",
-        "faculty": "FACULTY OF COMPUTER SCIENCE AND INFORMATION TECHNOLOGY",
-        "continuousAssessmentWeightage": "50~50",
-        "examDuration": 7200,
-        "levelCode": 3,
-        "activities": {
-          "LEC": [
-            {
-              "dayOfWeek": "Wednesday",
-              "startTime": "13:00",
-              "endTime": "15:00",
-              "room": "DK2",
-              "occurrences": [
-                "1",
-                "2"
-              ]
-            }
-          ],
-          "EXAM": [],
-          "TUT": [
-            {
-              "dayOfWeek": "Friday",
-              "startTime": "15:00",
-              "endTime": "16:00",
-              "room": "MM3",
-              "occurrences": [
-                "1"
-              ]
-            },
-            {
-              "dayOfWeek": "Friday",
-              "startTime": "16:00",
-              "endTime": "17:00",
-              "room": "MM3",
-              "occurrences": [
-                "2"
-              ]
-            }
-          ],
-          "LAB": [],
-          "ONL": [],
-          "REPROJECT": [],
-          "SEM": [],
-          "PRA": []
-        }
+      "moduleName": "INTRODUCTION TO DATA SCIENCE",
+      "moduleCode": "WIE2003",
+      "credit": 3,
+      "yearPeriod": "2024/S2",
+      "overallTargetStudent": 100,
+      "level": "BACHELOR",
+      "faculty": "FACULTY OF COMPUTER SCIENCE AND INFORMATION TECHNOLOGY",
+      "continuousAssessmentWeightage": "60~40",
+      "examDuration": 7200,
+      "levelCode": 3,
+      "activities": {
+        "LEC": [
+          {
+            "dayOfWeek": "Tuesday",
+            "startTime": "10:00",
+            "endTime": "12:00",
+            "room": "DK1",
+            "occurrences": [
+              "1",
+              "2"
+            ]
+          }
+        ],
+        "EXAM": [
+          {
+            "dayOfWeek": "Thursday",
+            "startTime": "08:30",
+            "endTime": "10:30",
+            "room": "EXAM_HOLD_G",
+            "startDate": "10/07/2025",
+            "endDate": "10/07/2025",
+            "activityTypeExam": "Physical",
+            "occurrences": [
+              "1",
+              "2"
+            ]
+          }
+        ],
+        "TUT": [
+          {
+            "dayOfWeek": "Thursday",
+            "startTime": "13:00",
+            "endTime": "14:00",
+            "room": "BK",
+            "occurrences": [
+              "1"
+            ]
+          },
+          {
+            "dayOfWeek": "Thursday",
+            "startTime": "14:00",
+            "endTime": "15:00",
+            "room": "BK",
+            "occurrences": [
+              "2"
+            ]
+          }
+        ],
+        "LAB": [],
+        "ONL": [],
+        "REPROJECT": [],
+        "SEM": [],
+        "PRA": []
+      }
     }
     ```
 
