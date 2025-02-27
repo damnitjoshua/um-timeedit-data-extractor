@@ -51,59 +51,6 @@ This toolkit is designed to be used in two distinct phases: data acquisition usi
 
 6.  **Download Raw JSON Data:** Upon successful script completion, the browser will automatically download a file named `course_events_with_details.json` to your browser's default download directory. This file contains the raw, extracted data in JSON format, ready for the next phase.
 
-
-    Example JSON
-    ```json
-      {
-        "moduleName": "TRENDS IN INFORMATION SYSTEMS",
-        "moduleCode": "WIE2001",
-        "credit": 3,
-        "yearPeriod": "2024/S2",
-        "overallTargetStudent": 60,
-        "level": "BACHELOR",
-        "faculty": "FACULTY OF COMPUTER SCIENCE AND INFORMATION TECHNOLOGY",
-        "continuousAssessmentWeightage": "50~50",
-        "examDuration": 7200,
-        "levelCode": 3,
-        "activities": {
-          "LEC": [
-            {
-              "dayOfWeek": "Monday",
-              "startTime": "08:00",
-              "endTime": "11:00",
-              "room": "MM4",
-              "occurrences": [
-                "1",
-                "1M"
-              ]
-            }
-          ],
-          "EXAM": [
-            {
-              "dayOfWeek": "Monday",
-              "startTime": "08:30",
-              "endTime": "10:30",
-              "room": "EXAM_HOLD_G",
-              "startDate": "07/07/2025",
-              "endDate": "07/07/2025",
-              "activityTypeExam": "Physical",
-              "occurrences": [
-                "1",
-                "1M"
-              ]
-            }
-          ],
-          "TUT": [],
-          "LAB": [],
-          "ONL": [],
-          "REPROJECT": [],
-          "SEM": [],
-          "PRA": []
-        }
-      }
-      ```
-
-
 ### Phase 2: Data Structuring with `cleaner.js` (Node.js Environment)
 
 To facilitate efficient application development, the raw data from Phase 1 requires structuring. The `cleaner.js` script, executed using Node.js, transforms `course_events_with_details.json` into a more developer-friendly `timetable_data.json` file.
@@ -123,60 +70,61 @@ To facilitate efficient application development, the raw data from Phase 1 requi
 
     This command will process the raw data and generate `timetable_data.json` in the same directory, providing you with the structured data ready for integration into your UM timetable application.
     
-    Example of JSON data:
+     Example of json data:
     
   
     ```json
     {
-      "level": "BACHELOR",
-      "credit": 3,
-      "faculty": "FACULTY OF COMPUTER SCIENCE AND INFORMATION TECHNOLOGY",
-      "levelCode": 3,
-      "activities": {
-        "LAB": [],
-        "LEC": [
-          {
-            "room": "DK2",
-            "endTime": "15:00",
-            "dayOfWeek": "Wednesday",
-            "startTime": "13:00",
-            "occurrences": [
-              "1",
-              "2"
-            ]
-          }
-        ],
-        "ONL": [],
-        "PRA": [],
-        "SEM": [],
-        "TUT": [
-          {
-            "room": "MM3",
-            "endTime": "16:00",
-            "dayOfWeek": "Friday",
-            "startTime": "15:00",
-            "occurrences": [
-              "1"
-            ]
-          },
-          {
-            "room": "MM3",
-            "endTime": "17:00",
-            "dayOfWeek": "Friday",
-            "startTime": "16:00",
-            "occurrences": [
-              "2"
-            ]
-          }
-        ],
-        "REPROJECT": []
-      },
-      "moduleCode": "WID3013",
-      "moduleName": "COMPUTER VISION AND PATTERN RECOGNITION",
-      "yearPeriod": "2024/S1, 2024/S2",
-      "examDuration": 7200,
-      "overallTargetStudent": 120,
-      "continuousAssessmentWeightage": "50~50"
+        "moduleName": "COMPUTER VISION AND PATTERN RECOGNITION",
+        "moduleCode": "WID3013",
+        "credit": 3,
+        "yearPeriod": "2024/S1, 2024/S2",
+        "overallTargetStudent": 120,
+        "level": "BACHELOR",
+        "faculty": "FACULTY OF COMPUTER SCIENCE AND INFORMATION TECHNOLOGY",
+        "continuousAssessmentWeightage": "50~50",
+        "examDuration": 7200,
+        "levelCode": 3,
+        "activities": {
+          "LEC": [
+            {
+              "dayOfWeek": "Wednesday",
+              "startTime": "13:00",
+              "endTime": "15:00",
+              "room": "DK2",
+              "occurrences": [
+                "1",
+                "2"
+              ]
+            }
+          ],
+          "EXAM": [],
+          "TUT": [
+            {
+              "dayOfWeek": "Friday",
+              "startTime": "15:00",
+              "endTime": "16:00",
+              "room": "MM3",
+              "occurrences": [
+                "1"
+              ]
+            },
+            {
+              "dayOfWeek": "Friday",
+              "startTime": "16:00",
+              "endTime": "17:00",
+              "room": "MM3",
+              "occurrences": [
+                "2"
+              ]
+            }
+          ],
+          "LAB": [],
+          "ONL": [],
+          "REPROJECT": [],
+          "SEM": [],
+          "PRA": []
+        }
     }
     ```
 
