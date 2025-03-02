@@ -78,6 +78,33 @@ async function parseReservationDetailsFromHtml(html) {
   return details;
 }
 
+async function processResolvedObject(
+  resolvedObject,
+  eventsCountForBatch) {
+  const object = resolvedObject;
+  if (object && object.idOnly) {
+    const events = await getCourseEvents(baseUrl, object.idOnly);
+    object.events = events ? events.reservations : null;
+    if (object.events) {
+      eventsCountForBatch = object.events.length;
+
+      const reservationDetailPromises = object.events.map(async (reservation) => {        
+        const reservationHtml = await getReservationDetailsHtml(baseUrl, reservation.id);
+        const reservationDetails = reservationHtml ? await parseReservationDetailsFromHtml(reservationHtml) : null;
+
+        const result = { reservation, details: reservationDetails };
+        //::Pass by reference property of JS
+        result.reservation.html_details = result.details;
+        return;
+      })
+      
+      return await Promise.all(reservationDetailPromises);
+    }
+  } else {
+    object.events = null;
+    throw new Error("Object idOnly is null");
+  }
+}
 
 async function getAllObjects(baseUrl, maxItems = 29000) {
   let allObjects = [];
@@ -87,6 +114,7 @@ async function getAllObjects(baseUrl, maxItems = 29000) {
   const objectsBaseUrl = `${baseUrl}objects.html?max=${pageSize}&fr=t&partajax=t&im=f&sid=4&l=en_US&objects=&types=15&part=t&media=html`;
 
   while (allObjects.length < maxItems) {
+    let eventsCountForBatch = 0;
     const currentUrl = `${objectsBaseUrl}&start=${currentStart}`;
     try {
       const response = await fetch(currentUrl);
@@ -97,99 +125,214 @@ async function getAllObjects(baseUrl, maxItems = 29000) {
       const html = await response.text();
       const parser = new DOMParser();
       const doc = parser.parseFromString(html, 'text/html');
-
+      
+      
       const objectsOnPagePromises = Array.from(doc.querySelectorAll('[data-idonly]')).map(async itemDiv => {
-        const objectId = itemDiv.dataset.idonly;
-        const objectName = itemDiv.dataset.name;
-        const details = await getObjectDetails(baseUrl, objectId);
-        return {
-          id: itemDiv.dataset.id,
-          idOnly: itemDiv.dataset.idonly,
-          type: itemDiv.dataset.type,
-          name: objectName,
-          details: details,
-        };
-      });
-
-      const resolvedObjects = await Promise.all(objectsOnPagePromises);
-
-      let eventsCountForBatch = 0;
-      for (const object of resolvedObjects) {
-        if (object && object.idOnly) {
-          const events = await getCourseEvents(baseUrl, object.idOnly);
-          object.events = events ? events.reservations : null;
-          if (object.events) {
-            const reservationDetailPromises = object.events.map(async (reservation) => {
-              const reservationHtml = await getReservationDetailsHtml(baseUrl, reservation.id);
-              const reservationDetails = await parseReservationDetailsFromHtml(reservationHtml);
-              return { reservation, details: reservationDetails };
-            });
-
-            const reservationDetailsResults = await Promise.all(reservationDetailPromises);
-
-            for (const result of reservationDetailsResults) {
-              result.reservation.html_details = result.details;
-            }
-
-
-            if (object.events.length > 0) {
-              eventsCountForBatch++;
-            }
+        try {
+          //Stop loop when max 
+          //TODO: Somehow, maybe bcz length is of initial, this is not working
+          if (allObjects.length >= maxItems) {
+            throw new Error("Max Items Reached");
           }
-        } else {
-          object.events = null;
+          
+          const objectId = itemDiv.dataset.idonly;
+          
+          const objectName = itemDiv.dataset.name;
+          const details = await getObjectDetails(baseUrl, objectId);
+          const result = {
+            id: itemDiv.dataset.id,
+            idOnly: itemDiv.dataset.idonly,
+            type: itemDiv.dataset.type,
+            name: objectName,
+            events: null,
+            details: details,
+          };
+  
+          await processResolvedObject(result, eventsCountForBatch);
+          //::Pass by reference property of JS | Modified result
+          if(allObjects.length < maxItems) {
+            allObjects.push(result);
+            console.log(`Progress: ${allObjects.length}/${maxItems}`);
+          }
+        } catch (error) {
+          if (error.message === "Max Items Reached") {
+            return allObjects; // We've reached our maximum
+          }
+          console.error("Error processing object:", error);
         }
+      });
+      
+      if(objectsOnPagePromises.length !== 0) {
+        //Array of objects
+        const resolvedObjects = await Promise.allSettled(objectsOnPagePromises);
+        
+        const totalObjectsElement = doc.querySelector('.searchResultCount');
+        let totalObjects = null;
+        if (totalObjectsElement) {
+          const countText = totalObjectsElement.textContent.trim().replace(/\D/g, '');
+          totalObjects = parseInt(countText, 10);
+        }
+        const startIndex = currentStart + 1;
+        const endIndex = currentStart + resolvedObjects.length;
+
+        console.log(`Objects ${startIndex}-${endIndex} processed. Events found for e ${eventsCountForBatch} objects.`);
+
+        if (totalObjects !== null && allObjects.length >= Math.min(totalObjects, maxItems)) {
+          break;
+        }
+        if (resolvedObjects.length === 0) {
+          break;
+        }
+
+        currentStart += pageSize;
       }
-
-      allObjects.push(...resolvedObjects);
-
-      const totalObjectsElement = doc.querySelector('.searchResultCount');
-      if (totalObjectsElement) {
-        const countText = totalObjectsElement.textContent.trim().replace(/\D/g, '');
-        totalObjects = parseInt(countText, 10);
-      }
-
-      const startIndex = currentStart + 1;
-      const endIndex = currentStart + resolvedObjects.length;
-      console.log(`Objects ${startIndex}-${endIndex} processed. Events found for ${eventsCountForBatch} objects.`);
-
-
-      if (totalObjects !== null && allObjects.length >= Math.min(totalObjects, maxItems)) {
-        break;
-      }
-
-      if (resolvedObjects.length === 0) {
-        break;
-      }
-
-      currentStart += pageSize;
-
     } catch (error) {
       console.error("Error fetching data:", error);
       break;
     }
   }
+    
+  return allObjects.slice(0, maxItems);
+}
 
+async function getAllObjectsTurbo(baseUrl, maxItems = 29000) {
+  const pageSize = 100;
+  const objectsBaseUrl = `${baseUrl}objects.html?max=${pageSize}&fr=t&partajax=t&im=f&sid=4&l=en_US&objects=&types=15&part=t&media=html`;
+  let allObjects = [];
+  
+  const batchCount = Math.ceil(maxItems / pageSize);
+  const batchPromises = [];
+
+  for (let i = 0; i < batchCount; i++) {
+    const currentStart = i * pageSize;
+    
+    const batchPromise = (async () => {
+      //Every 100
+        let eventsCountForBatch = 0;
+        const currentUrl = `${objectsBaseUrl}&start=${currentStart}`;
+        try {
+          const response = await fetch(currentUrl);
+          if (!response.ok) {
+            console.error(`HTTP error! status: ${response.status}`);
+            return [];
+          }
+  
+          const html = await response.text();
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+          
+          
+          const objectsOnPagePromises = Array.from(doc.querySelectorAll('[data-idonly]')).map(async itemDiv => {
+            try {
+              //Stop loop when max 
+              //TODO: Somehow, maybe bcz length is of initial, this is not working
+              if (allObjects.length >= maxItems) {
+                throw new Error("Max Items Reached");
+              }
+              
+              const objectId = itemDiv.dataset.idonly;
+              
+              const objectName = itemDiv.dataset.name;
+              const details = await getObjectDetails(baseUrl, objectId);
+              const result = {
+                id: itemDiv.dataset.id,
+                idOnly: itemDiv.dataset.idonly,
+                type: itemDiv.dataset.type,
+                name: objectName,
+                events: null,
+                details: details,
+              };
+      
+              await processResolvedObject(result, eventsCountForBatch);
+              //::Pass by reference property of JS | Modified result
+              if(allObjects.length < maxItems) {
+                allObjects.push(result);
+                console.log(`Progress: ${allObjects.length}/${maxItems}`);
+              }
+            } catch (error) {
+              if (error.message === "Max Items Reached") {
+                return allObjects; // We've reached our maximum
+              }
+              console.error("Error processing object:", error);
+            }
+          });
+          
+          if(objectsOnPagePromises.length !== 0) {
+            //Array of objects
+            const resolvedObjects = await Promise.allSettled(objectsOnPagePromises);
+            
+            const totalObjectsElement = doc.querySelector('.searchResultCount');
+            let totalObjects = null;
+            if (totalObjectsElement) {
+              const countText = totalObjectsElement.textContent.trim().replace(/\D/g, '');
+              totalObjects = parseInt(countText, 10);
+            }
+            const startIndex = currentStart + 1;
+            const endIndex = currentStart + resolvedObjects.length;
+            console.log(`Objects ${startIndex}-${endIndex} processed. Events found for e ${eventsCountForBatch} objects.`);
+            if (totalObjects !== null && allObjects.length >= Math.min(totalObjects, maxItems)) 
+              return [];
+          } else return [];
+        } catch (error) {
+          console.error(`Error fetching batch starting at ${currentStart}:`, error);
+          return [];
+        }
+
+    })();
+
+    batchPromises.push(batchPromise);
+  }
+
+  await Promise.all(batchPromises);
   return allObjects.slice(0, maxItems);
 }
 
 
-const baseUrl = "https://cloud.timeedit.net/my_um/web/students/";
+let baseUrl = "https://cloud.timeedit.net/my_um/web/students/";
 if (baseUrl[baseUrl.length - 1] !== "/") {
   baseUrl += "/";
 }
 
-const maxItemsToFetch = 29000; // <---- SET YOUR MAX ITEMS HERE
+const fileName = 'course_events_with_details.json';
 
-getAllObjects(baseUrl, maxItemsToFetch)
-  .then(objectsWithEvents => {
-    const blob = new Blob([JSON.stringify(objectsWithEvents, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'course_events_with_details.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  });
+function startProcess(maxItemsToFetch, turbo) {
+  try {
+    if(turbo) {
+      getAllObjectsTurbo(baseUrl, maxItemsToFetch)
+      .then(objectsWithEvents => {
+        const blob = new Blob([JSON.stringify(objectsWithEvents, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+    } else {
+      getAllObjects(baseUrl, maxItemsToFetch)
+      .then(objectsWithEvents => {
+        const blob = new Blob([JSON.stringify(objectsWithEvents, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+    }
+      
+      // Return filename if no error is detected
+      return fileName;
+  } catch (error) {
+    console.log("Error caught at main.js:startProcess()")
+    return "";
+  }
+}
+
+const maxItemsToFetch = 29000; // <---- SET YOUR MAX ITEMS HERE
+const parallelExecution = false;
+startProcess(maxItemsToFetch, parallelExecution);

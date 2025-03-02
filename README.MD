@@ -49,7 +49,31 @@ This toolkit is designed to be used in two distinct phases: data acquisition usi
 
     Modify `29000` to your desired limit and then press Enter. Exercise caution when increasing this value significantly to avoid potential API rate limiting.
 
-6.  **Download Raw JSON Data:** Upon successful script completion, the browser will automatically download a file named `course_events_with_details.json` to your browser's default download directory. This file contains the raw, extracted data in JSON format, ready for the next phase.
+6.  **Enable Turbo Mode (Optional):**
+
+  To significantly accelerate the data extraction process, you can enable "turbo mode." This mode bypasses certain checks and optimizations, potentially leading to faster data retrieval. However, it may also increase the risk of encountering API rate limits or data inconsistencies. Use with caution.
+
+  To enable turbo mode, locate the following line within the pasted code:
+
+  ```javascript
+  const turboMode = false;
+  ```
+
+  Change `false` to `true` to activate turbo mode:
+
+  ```javascript
+  const turboMode = true;
+  ```
+
+  **Warning:** Enabling turbo mode is recommended for advanced users who understand the potential risks. If you encounter issues, disable turbo mode and try again.
+
+7.  **Download Raw JSON Data:** Upon successful script completion, the browser will automatically download a file named `course_events_with_details.json` to your browser's default download directory. This file contains the raw, extracted data in JSON format, ready for the next phase.
+
+### Note on Turbo Mode
+
+1.  When `turboMode` is disabled (`false`), concurrency is applied only between batches. Therefore, modules within each batch are not sorted.
+2.  When `turboMode` is enabled (`true`), full concurrency is applied, and the extracted modules are not sorted.
+
 
 ### Phase 2: Data Structuring with `cleaner.js` (Node.js Environment)
 
