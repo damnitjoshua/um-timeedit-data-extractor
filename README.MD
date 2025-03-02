@@ -51,21 +51,21 @@ This toolkit is designed to be used in two distinct phases: data acquisition usi
 
 6.  **Enable Turbo Mode (Optional):**
 
-  To significantly accelerate the data extraction process, you can enable "turbo mode." This mode bypasses certain checks and optimizations, potentially leading to faster data retrieval. However, it may also increase the risk of encountering API rate limits or data inconsistencies. Use with caution.
+    To significantly accelerate the data extraction process, you can enable "turbo mode." This mode bypasses certain checks and optimizations, potentially leading to faster data retrieval. However, it may also increase the risk of encountering API rate limits or data inconsistencies. Use with caution.
 
-  To enable turbo mode, locate the following line within the pasted code:
+    To enable turbo mode, locate the following line within the pasted code:
 
-  ```javascript
-  const turboMode = false;
-  ```
+    ```javascript
+    const turboMode = false;
+    ```
 
-  Change `false` to `true` to activate turbo mode:
+    Change `false` to `true` to activate turbo mode:
 
-  ```javascript
-  const turboMode = true;
-  ```
+    ```javascript
+    const turboMode = true;
+    ```
 
-  **Warning:** Enabling turbo mode is recommended for advanced users who understand the potential risks. If you encounter issues, disable turbo mode and try again.
+    **Warning:** Enabling turbo mode is recommended for advanced users who understand the potential risks. If you encounter issues, disable turbo mode and try again.
 
 7.  **Download Raw JSON Data:** Upon successful script completion, the browser will automatically download a file named `course_events_with_details.json` to your browser's default download directory. This file contains the raw, extracted data in JSON format, ready for the next phase.
 
