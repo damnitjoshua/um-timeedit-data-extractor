@@ -295,9 +295,9 @@ if (baseUrl[baseUrl.length - 1] !== "/") {
 
 const fileName = 'course_events_with_details.json';
 
-function startProcess(maxItemsToFetch, turbo) {
+function startProcess(maxItemsToFetch, turboMode) {
   try {
-    if(turbo) {
+    if(turboMode) {
       getAllObjectsTurbo(baseUrl, maxItemsToFetch)
       .then(objectsWithEvents => {
         const blob = new Blob([JSON.stringify(objectsWithEvents, null, 2)], { type: 'application/json' });
@@ -334,5 +334,5 @@ function startProcess(maxItemsToFetch, turbo) {
 }
 
 const maxItemsToFetch = 29000; // <---- SET YOUR MAX ITEMS HERE
-const parallelExecution = false;
-startProcess(maxItemsToFetch, parallelExecution);
+const turboMode = false;
+startProcess(maxItemsToFetch, turboMode);
