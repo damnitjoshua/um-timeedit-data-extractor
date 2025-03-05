@@ -1,7 +1,14 @@
 const fs = require('fs');
 
-function cleanTimetableData(jsonData, activitiesToInclude) {
+function cleanTimetableData(jsonData, lecturerData, activitiesToInclude) {
   const cleanedModules = {};
+  const lecturerMap = new Map();
+
+  lecturerData.forEach(lecturer => {
+    if (lecturer.details && lecturer.details.Code) {
+      lecturerMap.set(lecturer.details.Code, lecturer.details);
+    }
+  });
 
   jsonData.forEach(module => {
     if (module.events && Array.isArray(module.events)) {
@@ -39,6 +46,12 @@ function cleanTimetableData(jsonData, activitiesToInclude) {
 
           let room = event.html_details.Room ?? null;
           const occurrences = [];
+          let lecturerId = event.html_details.Lecturer ?? null;
+          let lecturerDetails = null;
+
+          if (lecturerId) {
+            lecturerDetails = lecturerMap.get(lecturerId);
+          }
 
           if (room && room[0] == module.details["Faculty"]) {
             room = room.substring(1);
@@ -73,10 +86,22 @@ function cleanTimetableData(jsonData, activitiesToInclude) {
               } else if (activityTypeExamValue === "Atas Talian") {
                 activityTypeExamValue = "Online";
               }
-              eventDetails["activityTypeExam"] = activityTypeExamValue; // Include renamed "Activity Type (exam)"
+              eventDetails["activityTypeExam"] = activityTypeExamValue;
             }
             if (occurrences.length > 0) {
               eventDetails.occurrences = occurrences;
+            }
+            if (lecturerDetails) {
+              eventDetails.lecturer = {
+                lecturerId: lecturerId,
+                fullName: lecturerDetails["Full Name"] ?? null,
+                title: lecturerDetails.Title ?? null,
+                email: lecturerDetails["E-mail"] ?? null,
+                jobTitle: lecturerDetails["Job Title"] ?? null,
+                jobCategory: lecturerDetails["Job Category"] ?? null,
+                facultyCode: lecturerDetails.Faculty ?? null,
+                departmentCode: lecturerDetails.Department ?? null
+              };
             }
             cleanedModules[moduleCode].activities[activityType].add(JSON.stringify(eventDetails));
           }
@@ -91,8 +116,6 @@ function cleanTimetableData(jsonData, activitiesToInclude) {
           return occA - occB;
         });
       });
-
-
     }
   });
 
@@ -123,58 +146,68 @@ function parseNumber(value) {
 }
 
 const outputFilePath = 'timetable_data.json';
+const moduleDataFilePath = process.argv[2]; // Path to module data JSON
+const lecturerDataFilePath = process.argv[3]; // Path to lecturer data JSON
 
-const filePath = process.argv[2];
-
-if (!filePath) {
-  console.error("Please provide the input JSON file path as a command line argument.");
-  console.error("Usage: node cleaner.js <file_path>");
+if (!moduleDataFilePath || !lecturerDataFilePath) {
+  console.error("Please provide both module data and lecturer data JSON file paths as command line arguments.");
+  console.error("Usage: node cleaner.js <module_data_file_path> <lecturer_data_file_path>");
   process.exit(1);
 }
 
-fs.readFile(filePath, 'utf8', (err, data) => {
-  if (err) {
-    console.error("Error reading the file:", err);
+// Read module data
+fs.readFile(moduleDataFilePath, 'utf8', (moduleErr, moduleData) => {
+  if (moduleErr) {
+    console.error("Error reading module data file:", moduleErr);
     return;
   }
 
-  try {
-    const jsonData = JSON.parse(data);
+  // Read lecturer data
+  fs.readFile(lecturerDataFilePath, 'utf8', (lecturerErr, lecturerRawData) => {
+    if (lecturerErr) {
+      console.error("Error reading lecturer data file:", lecturerErr);
+      return;
+    }
 
-    const uniqueActivitiesSet = new Set();
-    const uniqueExamActivityTypes = new Set();
+    try {
+      const moduleJsonData = JSON.parse(moduleData);
+      const lecturerJsonData = JSON.parse(lecturerRawData);
 
-    jsonData.forEach(module => {
-      if (module.events && Array.isArray(module.events)) {
-        module.events.forEach(event => {
-          if (event.html_details && event.html_details.Activity) {
-            uniqueActivitiesSet.add(event.html_details.Activity);
-          }
+      const uniqueActivitiesSet = new Set();
+      const uniqueExamActivityTypes = new Set();
 
-          if (event.html_details["Activity Type (exam)"] && event.html_details["Exam Time Slot"]) {
-            uniqueActivitiesSet.add("EXAM");
-            uniqueExamActivityTypes.add(event.html_details["Activity Type (exam)"]);
-          }
-        });
-      }
-    });
-    const activitiesToProcess = Array.from(uniqueActivitiesSet);
-    console.log("Dynamically detected activities:", activitiesToProcess);
-    console.log("Unique Exam types (before rename):", Array.from(uniqueExamActivityTypes));
+      moduleJsonData.forEach(module => {
+        if (module.events && Array.isArray(module.events)) {
+          module.events.forEach(event => {
+            if (event.html_details && event.html_details.Activity) {
+              uniqueActivitiesSet.add(event.html_details.Activity);
+            }
 
-    const cleanedData = cleanTimetableData(jsonData, activitiesToProcess);
+            if (event.html_details["Activity Type (exam)"] && event.html_details["Exam Time Slot"]) {
+              uniqueActivitiesSet.add("EXAM");
+              uniqueExamActivityTypes.add(event.html_details["Activity Type (exam)"]);
+            }
+          });
+        }
+      });
+      const activitiesToProcess = Array.from(uniqueActivitiesSet);
+      console.log("Dynamically detected activities:", activitiesToProcess);
+      console.log("Unique Exam types (before rename):", Array.from(uniqueExamActivityTypes));
 
-    const cleanedDataJSON = JSON.stringify(cleanedData, null, 2);
+      const cleanedData = cleanTimetableData(moduleJsonData, lecturerJsonData, activitiesToProcess);
 
-    fs.writeFile(outputFilePath, cleanedDataJSON, 'utf8', (writeErr) => {
-      if (writeErr) {
-        console.error("Error writing to the output file:", writeErr);
-      } else {
-        console.log(`Successfully cleaned and saved module-structured data with renamed 'Activity Type (exam)' in activities to ${outputFilePath}`);
-      }
-    });
+      const cleanedDataJSON = JSON.stringify(cleanedData, null, 2);
 
-  } catch (parseError) {
-    console.error("Error parsing JSON data:", parseError);
-  }
+      fs.writeFile(outputFilePath, cleanedDataJSON, 'utf8', (writeErr) => {
+        if (writeErr) {
+          console.error("Error writing to the output file:", writeErr);
+        } else {
+          console.log(`Successfully cleaned and saved module-structured data with lecturer info to ${outputFilePath}`);
+        }
+      });
+
+    } catch (parseError) {
+      console.error("Error parsing JSON data:", parseError);
+    }
+  });
 });
