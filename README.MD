@@ -11,7 +11,7 @@ This toolkit interacts with the TimeEdit API to provide essential data for timet
 3.  **Detailed Module Information Acquisition:**  Retrieves in-depth specifications for each module. This encompasses crucial details like module codes, descriptions, and any other pertinent metadata necessary for enriching timetable applications.
 4.  **Event Data Extraction:**  Gathers all scheduled events (reservations) linked to each module. This core functionality provides the raw timetable data, including timings, dates, locations, and event types (e.g., Lecture, Tutorial), essential for building scheduling features.
 5.  **Raw Data Export (JSON):**  Facilitates the download of extracted data into JSON files directly within the browser environment. `lecturer_data.json` contains lecturer information, while `course_events_with_details.json` holds module and event details. These raw JSON outputs serve as the initial datasets for further processing and application integration.
-6.  **Structured Data Refinement (Node.js):** Includes a `cleaner.js` script (Node.js) to transform the raw JSON data into a more organized and application-ready `timetable_data_with_lecturers.json` file. This process restructures and combines module and lecturer data for efficient programmatic access and simplifies the development of timetable functionalities.
+6.  **Structured Data Refinement (Node.js):** Includes a `cleaner.js` script (Node.js) to transform the raw JSON data into a more organized and application-ready `timetable_data.json` file. This process restructures and combines module and lecturer data for efficient programmatic access and simplifies the development of timetable functionalities.
 
 ## Getting Started
 
@@ -37,9 +37,9 @@ This toolkit is designed to be used in three distinct phases: lecturer data acqu
     *   In the Console, **paste** the entire JavaScript code copied from `lecturer.js`.
     *   Press **Enter** to initiate script execution.
 
-5.  **Download Raw Lecturer JSON Data:** Upon successful script completion, the browser will automatically download a file named `lecturer_data_batch.json` to your browser's default download directory. This file contains the raw lecturer data in JSON format.
+5.  **Download Raw Lecturer JSON Data:** Upon successful script completion, the browser will automatically download a file named `lecturer_data.json` to your browser's default download directory. This file contains the raw lecturer data in JSON format.
 
-    **Example `lecturer_data_batch.json` data format:**
+    **Example `lecturer_data.json` data format:**
 
     ```json
       {
@@ -100,14 +100,14 @@ This toolkit is designed to be used in three distinct phases: lecturer data acqu
 
 To facilitate efficient application development, the raw data from Phases 0 and 1 requires structuring and merging. The `cleaner.js` script, executed using Node.js, transforms `course_events_with_details.json` and `lecturer_data.json` into a more developer-friendly `timetable_data.json` file.
 
-**`timetable_data_with_lecturers.json` Structure for Application Development:**
+**`timetable_data.json` Structure for Application Development:**
 
 `timetable_data.json` is designed to be **module-centric**, grouping events by module code. This structure simplifies data access and manipulation within your timetable applications.  Within each module, activities are further categorized by type (e.g., "Lecture," "Tutorial"). Each activity type then contains an array of scheduled events, including time, day, room details, and now, enriched with lecturer information. This hierarchical structure is optimized for building features such as module-based timetable views, conflict detection, and personalized scheduling tools, now enhanced with lecturer profiles.
 
 **Execution Instructions for `cleaner.js`:**
 
 1.  **Node.js Requirement:** Ensure you have Node.js installed on your system.
-2.  **Run `cleaner.js` in Terminal:** Open your terminal or command prompt, navigate to the directory containing `cleaner.js`, `course_events_with_details.json`, and `lecturer_data_batch.json`, and execute the following command:
+2.  **Run `cleaner.js` in Terminal:** Open your terminal or command prompt, navigate to the directory containing `cleaner.js`, `course_events_with_details.json`, and `lecturer_data.json`, and execute the following command:
 
     ```bash
     node cleaner.js course_events_with_details.json lecturer_data.json
